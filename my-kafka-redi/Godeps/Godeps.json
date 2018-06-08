@@ -1,0 +1,39 @@
+{
+	"ImportPath": "adhoc/adhoc_data_fast",
+	"GoVersion": "go1.9",
+	"GodepVersion": "v80",
+	"Deps": [
+		{
+			"ImportPath": "github.com/confluentinc/confluent-kafka-go/kafka",
+			"Comment": "v0.11.4-5-g1112e2c",
+			"Rev": "1112e2c08a15bce669a99cc35284a690fd2086b8"
+		},
+		{
+			"ImportPath": "github.com/natefinch/lumberjack",
+			"Comment": "v2.1-2-gaee4629",
+			"Rev": "aee4629129445bbdfb69aa565537dcfa16544311"
+		},
+		{
+			"ImportPath": "github.com/sirupsen/logrus",
+			"Comment": "v1.0.5-16-g778f2e7",
+			"Rev": "778f2e774c725116edbc3d039dc0dfc1cc62aae8"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/ssh/terminal",
+			"Rev": "e73bf333ef8920dbb52ad18d4bd38ad9d9bc76d7"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "79b0c6888797020a994db17c8510466c72fe75d9"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/windows",
+			"Rev": "79b0c6888797020a994db17c8510466c72fe75d9"
+		},
+		{
+			"ImportPath": "gopkg.in/ini.v1",
+			"Comment": "v1.35.0",
+			"Rev": "ace140f73450505f33e8b8418216792275ae82a7"
+		}
+	]
+}
