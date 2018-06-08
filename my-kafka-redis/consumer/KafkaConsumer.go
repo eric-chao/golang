@@ -3,11 +3,15 @@ package consumer
 import (
 	. "adhoc/adhoc_data_fast/config"
 	. "adhoc/adhoc_data_fast/logger"
+	. "adhoc/adhoc_data_fast/model"
+	"encoding/json"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"fmt"
 )
+
 //to control the parallelism
 var channel = make(chan bool, GlobalConfig.Go.Goroutine)
+
 func Consume() {
 
 	c, err := kafka.NewConsumer(&kafka.ConfigMap{
@@ -29,11 +33,9 @@ func Consume() {
 		msg, err := c.ReadMessage(-1)
 		if err == nil {
 			channel <- true
-			record := string(msg.Value)
-			go parseBody(record)
+			go parseBody(msg.Value)
 			fmt.Printf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
 		} else {
-			c.Commit()
 			fmt.Printf("Consumer error: %v (%v)\n", err, msg)
 			break
 		}
@@ -41,7 +43,9 @@ func Consume() {
 
 }
 
-func parseBody(msg string) {
-	Logger.Info(msg)
+func parseBody(msg []byte) {
+	p := &RequestBody{}
+	json.Unmarshal(msg, p)
+	Logger.Infof("%s - %s", p.AppKey, p.ClientId)
 	<- channel
 }
