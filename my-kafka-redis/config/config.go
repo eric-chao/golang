@@ -8,16 +8,30 @@ import (
 )
 
 type Config struct {
-	Redis struct {
-		Host     string `ini:"host"`
-		Port     string `ini:"port"`
-		PoolSize int    `ini:"poolSize"`
+	Adhoc struct {
+		IgnoreDays int `ini:"ignore-days"`
+		ExpireDays int `ini:"expire-days"`
 	}
 
 	Kafka struct {
 		Bootstrap string `ini:"bootstrap.servers"`
 		GroupId   string `ini:"group.id"`
 		Topic     string `ini:"topic"`
+	}
+
+	Redis struct {
+		ExpHost      string `ini:"exp.host"`
+		ExpPort      string `ini:"exp.port"`
+		ExpPoolSize  int    `ini:"exp.poolSize"`
+		DataHost     string `ini:"data.host"`
+		DataPort     string `ini:"data.port"`
+		DataPoolSize int    `ini:"data.poolSize"`
+	}
+
+	MongoDB struct {
+		Host string `ini:"host"`
+		Port string `ini:"port"`
+		DB   string `ini:"db"`
 	}
 
 	Log struct {
@@ -36,24 +50,37 @@ func init() {
 	GlobalConfig, _ = NewConfig("config.ini")
 	kafkaBootstrap := os.Getenv("KAFKA_BOOTSTRAP")
 	kafkaGroupId := os.Getenv("	KAFKA_GROUP_ID")
-	redisHost := os.Getenv("REDIS_HOST")
-	redisPort := os.Getenv("REDIS_PORT")
-	redisPoolSize := os.Getenv("REDIS_POOL_SIZE")
+	expRedisHost := os.Getenv("EXP_REDIS_HOST")
+	expRedisPort := os.Getenv("EXP_REDIS_PORT")
+	expRedisPoolSize := os.Getenv("EXP_REDIS_POOL_SIZE")
+	dataRedisHost := os.Getenv("DATA_REDIS_HOST")
+	dataRedisPort := os.Getenv("DATA_REDIS_PORT")
+	dataRedisPoolSize := os.Getenv("DATA_REDIS_POOL_SIZE")
 	if kafkaBootstrap != "" {
 		GlobalConfig.Kafka.Bootstrap = kafkaBootstrap
 	}
 	if kafkaGroupId != "" {
 		GlobalConfig.Kafka.GroupId = kafkaGroupId
 	}
-	if redisHost != "" {
-		GlobalConfig.Redis.Host = redisHost
+	//ENV config for exp redis
+	if expRedisHost != "" {
+		GlobalConfig.Redis.ExpHost = expRedisHost
 	}
-	if redisPort != "" {
-		GlobalConfig.Redis.Port = redisPort
+	if expRedisPort != "" {
+		GlobalConfig.Redis.ExpPort = expRedisPort
 	}
-
-	if redisPoolSize != "" {
-		GlobalConfig.Redis.PoolSize, _ = strconv.Atoi(redisPoolSize)
+	if expRedisPoolSize != "" {
+		GlobalConfig.Redis.ExpPoolSize, _ = strconv.Atoi(expRedisPoolSize)
+	}
+	//ENV config for data redis
+	if dataRedisHost != "" {
+		GlobalConfig.Redis.DataHost = dataRedisHost
+	}
+	if dataRedisPort != "" {
+		GlobalConfig.Redis.DataPort = dataRedisPort
+	}
+	if dataRedisPoolSize != "" {
+		GlobalConfig.Redis.DataPoolSize, _ = strconv.Atoi(dataRedisPoolSize)
 	}
 }
 

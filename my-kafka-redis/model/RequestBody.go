@@ -52,6 +52,6 @@ type RequestBody struct {
 	AppKey   string            `json:"app_key"`
 	ClientId string            `json:"client_id"`
 	Stats    []Stat            `json:"stats"`
-	summary  map[string]string `json:"summary"`
-	custom   map[string]string `json:"custom"`
+	Summary  map[string]string `json:"summary"`
+	Custom   map[string]string `json:"custom"`
 }

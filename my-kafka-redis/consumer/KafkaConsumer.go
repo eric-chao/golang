@@ -4,9 +4,11 @@ import (
 	. "adhoc/adhoc_data_fast/config"
 	. "adhoc/adhoc_data_fast/logger"
 	. "adhoc/adhoc_data_fast/model"
+	. "adhoc/adhoc_data_fast/redis"
+	. "adhoc/adhoc_data_fast/process"
 	"encoding/json"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"fmt"
+	"strings"
 )
 
 //to control the parallelism
@@ -34,9 +36,9 @@ func Consume() {
 		if err == nil {
 			channel <- true
 			go parseBody(msg.Value)
-			fmt.Printf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
+			Logger.Debugf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
 		} else {
-			fmt.Printf("Consumer error: %v (%v)\n", err, msg)
+			Logger.Debugf("Consumer error: %v (%v)\n", err, msg)
 			break
 		}
 	}
@@ -46,6 +48,45 @@ func Consume() {
 func parseBody(msg []byte) {
 	p := &RequestBody{}
 	json.Unmarshal(msg, p)
-	Logger.Infof("%s - %s", p.AppKey, p.ClientId)
-	<- channel
+
+	appId := GetAppId(p.AppKey)
+	if appId == "" {
+		//do nothing
+	} else {
+		clientId := p.ClientId
+		fromSystem := strings.HasPrefix(clientId, "ADHOC_EXP:")
+		for _, stat := range p.Stats {
+			var expIds []string
+			if len(stat.ExperimentIds) > 0 {
+				expIds = stat.ExperimentIds
+			} else {
+				date := stat.Timestamp
+				if fromSystem {
+					expIds = append(expIds, strings.Split(clientId, ":")[1])
+				} else {
+					expIds = append(expIds, GetExpId(appId, clientId, date))
+				}
+			}
+
+			modId := GetModId(appId, clientId)
+			for _, expId := range expIds {
+				log := LogBody{
+					Timestamp:  stat.Timestamp,
+					AppId:      appId,
+					ExpId:      expId,
+					ModId:      modId,
+					StatKey:    stat.Key,
+					StatValue:  stat.Value,
+					AccValue:   stat.AccValue,
+					Summary:    p.Summary,
+					Custom:     p.Custom,
+					FromSystem: fromSystem,
+				}
+				//process log
+				AllCounter.NewLogProcess(log)
+			}
+		}
+	}
+
+	<-channel
 }
