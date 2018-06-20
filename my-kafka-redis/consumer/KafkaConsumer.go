@@ -1,11 +1,11 @@
 package consumer
 
 import (
-	. "adhoc/adhoc_data_fast/config"
-	. "adhoc/adhoc_data_fast/logger"
-	. "adhoc/adhoc_data_fast/model"
-	. "adhoc/adhoc_data_fast/redis"
-	. "adhoc/adhoc_data_fast/process"
+	. "adhoc/adhoc_data_fast_golang/config"
+	. "adhoc/adhoc_data_fast_golang/logger"
+	. "adhoc/adhoc_data_fast_golang/model"
+	. "adhoc/adhoc_data_fast_golang/redis"
+	. "adhoc/adhoc_data_fast_golang/process"
 	"encoding/json"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"strings"
@@ -26,10 +26,10 @@ func Consume() {
 		Logger.Error("[kafka]: connect error!")
 		return
 	}
+	defer c.Close()
 
 	topic := GlobalConfig.Kafka.Topic
 	c.SubscribeTopics([]string{topic}, nil)
-	defer c.Close()
 
 	for {
 		msg, err := c.ReadMessage(-1)
@@ -38,7 +38,7 @@ func Consume() {
 			go parseBody(msg.Value)
 			Logger.Debugf("Message on %s: %s\n", msg.TopicPartition, string(msg.Value))
 		} else {
-			Logger.Debugf("Consumer error: %v (%v)\n", err, msg)
+			Logger.Errorf("Consumer error: %v (%v)\n", err, msg)
 			break
 		}
 	}
@@ -48,7 +48,7 @@ func Consume() {
 func parseBody(msg []byte) {
 	p := &RequestBody{}
 	json.Unmarshal(msg, p)
-
+	Logger.Info("###", p)
 	appId := GetAppId(p.AppKey)
 	if appId == "" {
 		//do nothing
@@ -75,6 +75,7 @@ func parseBody(msg []byte) {
 					AppId:      appId,
 					ExpId:      expId,
 					ModId:      modId,
+					ClientId:   clientId,
 					StatKey:    stat.Key,
 					StatValue:  stat.Value,
 					AccValue:   stat.AccValue,
@@ -82,8 +83,14 @@ func parseBody(msg []byte) {
 					Custom:     p.Custom,
 					FromSystem: fromSystem,
 				}
+				Logger.Info("[LogBody] ", log.ToString())
 				//process log
 				AllCounter.NewLogProcess(log)
+				HourlyCounter.NewLogProcess(log)
+				DailyCounter.NewLogProcess(log)
+				MonthlyUvCounter.NewLogProcess(log)
+				StatCounter.NewLogProcess(log)
+				ApiCounter.NewLogProcess(log)
 			}
 		}
 	}

@@ -1,13 +1,13 @@
 package redis
 
 import (
-	. "adhoc/adhoc_data_fast/config"
+	. "adhoc/adhoc_data_fast_golang/config"
 	"github.com/go-redis/redis"
 	"fmt"
 )
 
 func NewDataRedisClient() *redis.Client {
-	redisAddress := fmt.Sprintf("%s:%s", GlobalConfig.Redis.ExpHost, GlobalConfig.Redis.ExpPort)
+	redisAddress := fmt.Sprintf("%s:%s", GlobalConfig.Redis.DataHost, GlobalConfig.Redis.DataPort)
 	DataRedisClient := redis.NewClient(&redis.Options{
 		Addr:     redisAddress,
 		Password: "", // no password set

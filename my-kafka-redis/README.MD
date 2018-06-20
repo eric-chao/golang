@@ -1,5 +1,9 @@
+# librdkafka安装
+
 git clone https://github.com/edenhill/librdkafka.git
+
 cd librdkafka
+
 ./configure --prefix /usr
 sudo make
 sudo make install
@@ -7,6 +11,7 @@ sudo make install
 ~/.bash_profile
 export PKG_CONFIG_PATH=/usr/lib/pkgconfig
 
+# librdkafka依赖
 yum -y update gcc
 yum -y install gcc+ gcc-c++
 
@@ -28,6 +33,6 @@ stat
 
 [test]
 1. go test xxx.go -test.v
-2. go test -bench="."
-3. go test -run=文件名字 -bench=bench名字 -cpuprofile=生产的cprofile文件名称 文件夹
+2. go test -bench Benchmark_pfadd* -count 10 -cpu 4
+   go test -bench Benchmark_hinc* -count 2 -cpu 1,2,3,4
 

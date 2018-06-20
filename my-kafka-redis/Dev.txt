@@ -1,0 +1,32 @@
+ADHOC_d9d4005a-79f1-4efe-b985-5d4478cdd75e
+
+
+HGETALL adhoc_daily_client:2018-06-12T16%3A00%3A00.000Z:d9d4005a-79f1-4efe-b985-5d4478cdd75e
+
+
+
+Timestamp: 1528950463000 |
+AppId: d9d4005a-79f1-4efe-b985-5d4478cdd75e |
+ExpId: f7a13603-43a2-4a8d-a04a-a5f4929a97b7 |
+ModId: 28 |
+ClientId:  |
+StatKey: Event-GET_EXPERIMENT_FLAGS |
+StatValue: 1.000000 |
+AccValue: 0.000000 |
+Summary: k=region_city, v=局域网\n k=region_province, v=局域网\n  |
+Custom:  |
+FromSystem: false"
+
+
+kafka-consumer-groups.sh --bootstrap-server kafka-1-data:9092 --group adhoc-data-fast --describe  --new-consumer
+kafka-consumer-groups.sh --bootstrap-server kafka-1-data:9092 --group adhoc-data-fast-tmp --describe  --new-consumer
+
+[redis]
+config get dir
+
+save
+
+${dir}/dump.rdb
+
+docker run -p 8379:6379 -v /data/dump.rdb:/data/dump.rdb --name redis-data -d redis
+docker run -p 9379:6379 -v /data/dump-1.rdb:/data/dump.rdb --name redis-data-1 -d redis

@@ -1,5 +1,5 @@
 {
-	"ImportPath": "adhoc/adhoc_data_fast",
+	"ImportPath": "adhoc/adhoc_data_fast_golang",
 	"GoVersion": "go1.9",
 	"GodepVersion": "v80",
 	"Deps": [
@@ -7,6 +7,46 @@
 			"ImportPath": "github.com/confluentinc/confluent-kafka-go/kafka",
 			"Comment": "v0.11.4-5-g1112e2c",
 			"Rev": "1112e2c08a15bce669a99cc35284a690fd2086b8"
+		},
+		{
+			"ImportPath": "github.com/go-redis/redis",
+			"Comment": "v6.12.0-1-g0269263",
+			"Rev": "02692634419948b2dfd20b2057c51b24f3775db9"
+		},
+		{
+			"ImportPath": "github.com/go-redis/redis/internal",
+			"Comment": "v6.12.0-1-g0269263",
+			"Rev": "02692634419948b2dfd20b2057c51b24f3775db9"
+		},
+		{
+			"ImportPath": "github.com/go-redis/redis/internal/consistenthash",
+			"Comment": "v6.12.0-1-g0269263",
+			"Rev": "02692634419948b2dfd20b2057c51b24f3775db9"
+		},
+		{
+			"ImportPath": "github.com/go-redis/redis/internal/hashtag",
+			"Comment": "v6.12.0-1-g0269263",
+			"Rev": "02692634419948b2dfd20b2057c51b24f3775db9"
+		},
+		{
+			"ImportPath": "github.com/go-redis/redis/internal/pool",
+			"Comment": "v6.12.0-1-g0269263",
+			"Rev": "02692634419948b2dfd20b2057c51b24f3775db9"
+		},
+		{
+			"ImportPath": "github.com/go-redis/redis/internal/proto",
+			"Comment": "v6.12.0-1-g0269263",
+			"Rev": "02692634419948b2dfd20b2057c51b24f3775db9"
+		},
+		{
+			"ImportPath": "github.com/go-redis/redis/internal/singleflight",
+			"Comment": "v6.12.0-1-g0269263",
+			"Rev": "02692634419948b2dfd20b2057c51b24f3775db9"
+		},
+		{
+			"ImportPath": "github.com/go-redis/redis/internal/util",
+			"Comment": "v6.12.0-1-g0269263",
+			"Rev": "02692634419948b2dfd20b2057c51b24f3775db9"
 		},
 		{
 			"ImportPath": "github.com/natefinch/lumberjack",

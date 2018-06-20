@@ -1,7 +1,7 @@
 package test
 
 import (
-	. "adhoc/adhoc_data_fast/utils"
+	. "adhoc/adhoc_data_fast_golang/utils"
 	"testing"
 )
 

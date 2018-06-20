@@ -10,8 +10,10 @@ func EncodeKey(prefix, suffix string, keys ...string) string {
 	buf.WriteString(prefix)
 	buf.WriteString(suffix)
 	for _, v := range keys {
-		buf.WriteString(":")
-		buf.WriteString(url.QueryEscape(v))
+		if v != "" {
+			buf.WriteString(":")
+			buf.WriteString(url.QueryEscape(v))
+		}
 	}
 	return buf.String()
 }

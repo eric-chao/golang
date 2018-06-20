@@ -1,8 +1,8 @@
 package redis
 
 import (
-	. "adhoc/adhoc_data_fast/config"
-	. "adhoc/adhoc_data_fast/utils"
+	. "adhoc/adhoc_data_fast_golang/config"
+	. "adhoc/adhoc_data_fast_golang/utils"
 	"github.com/go-redis/redis"
 	"fmt"
 	"bytes"

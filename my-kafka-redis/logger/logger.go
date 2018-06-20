@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/natefinch/lumberjack"
 	log "github.com/sirupsen/logrus"
-	. "adhoc/adhoc_data_fast/config"
+	. "adhoc/adhoc_data_fast_golang/config"
 )
 
 var Logger *log.Logger

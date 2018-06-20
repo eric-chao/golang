@@ -1,9 +1,10 @@
 package process
 
 import (
-	. "adhoc/adhoc_data_fast/model"
-	. "adhoc/adhoc_data_fast/utils"
-	. "adhoc/adhoc_data_fast/redis"
+	. "adhoc/adhoc_data_fast_golang/logger"
+	. "adhoc/adhoc_data_fast_golang/model"
+	. "adhoc/adhoc_data_fast_golang/utils"
+	. "adhoc/adhoc_data_fast_golang/redis"
 	"time"
 )
 
@@ -31,7 +32,7 @@ func (newLog *NewLog) NewLogProcess(body LogBody) {
 	logTime := body.Timestamp
 	now := time.Now().Unix()
 	if !body.FromSystem {
-		if now > logTime {
+		if logTime > now {
 			logTime = now
 		}
 
@@ -51,50 +52,59 @@ func (newLog *NewLog) NewLogProcess(body LogBody) {
 		timeString := newLog.TimeString(logTime)
 
 		resultField := EncodeKey("", "", body.StatKey, customKey)
-
-		_, existed := commonStatKey[body.StatKey]
-		if !existed || prefix == "adhoc_all" {
-			if newLog.CountStat {
-				sumKey := EncodeKey(prefix, "_sum", timeString, body.AppId)
-				resultUvKey := EncodeKey(prefix, "_result_uv", timeString, body.AppId, body.StatKey, customKey)
-				pipeline.HIncrByFloat(sumKey, resultField, body.StatValue)
-				pipeline.PFAdd(resultUvKey, body.ClientId)
-				pipeline.Exec()
+		if newLog.CountStat {
+			sumKey := EncodeKey(prefix, "_sum", timeString, body.AppId)
+			resultUvKey := EncodeKey(prefix, "_result_uv", timeString, body.AppId, body.StatKey, customKey)
+			pipeline.HIncrByFloat(sumKey, resultField, body.StatValue)
+			pipeline.PFAdd(resultUvKey, body.ClientId)
+			_, err := pipeline.Exec()
+			if err != nil {
+				Logger.Error("[redis] ", err)
 			}
 		}
-
-		if !existed {
-			sumSquareKey := EncodeKey(prefix, "_sum_square", timeString, body.AppId)
-			if newLog.CountVariance && body.AccValue != 0.0 {
-				newValue := body.AccValue
-				oldValue := newValue - body.StatValue
-				incSquareSum := (newValue * newValue) - (oldValue * oldValue)
-				dataRedis.HIncrByFloat(sumSquareKey, resultField, incSquareSum)
-			} else if newLog.CountVariance {
-				historyKey := EncodeKey(prefix, "_history", timeString, body.AppId, body.ClientId, body.StatKey, customKey)
-				newValue := dataRedis.IncrByFloat(historyKey, body.StatValue).Val()
-				oldValue := newValue - body.StatValue
-				incSquareSum := (newValue * newValue) - (oldValue * oldValue)
-				// 1(s) = 1000000000(ns)
-				pipeline.Expire(historyKey, time.Duration(newLog.ExpireDays*3600*24*1000000000))
-				pipeline.HIncrByFloat(sumSquareKey, resultField, incSquareSum)
-				pipeline.Exec()
+		var accValue float64
+		Logger.Infof("[process] %s, %s, %f, %t", prefix, body.StatKey, body.AccValue, body.AccValue == accValue)
+		sumSquareKey := EncodeKey(prefix, "_sum_square", timeString, body.AppId)
+		if newLog.CountVariance && body.AccValue != accValue {
+			newValue := body.AccValue
+			oldValue := newValue - body.StatValue
+			incSquareSum := (newValue * newValue) - (oldValue * oldValue)
+			dataRedis.HIncrByFloat(sumSquareKey, resultField, incSquareSum)
+		} else if newLog.CountVariance {
+			historyKey := EncodeKey(prefix, "_history", timeString, body.AppId, body.ClientId, body.StatKey, customKey)
+			newValue := pipeline.IncrByFloat(historyKey, body.StatValue)
+			pipeline.Expire(historyKey, time.Duration(newLog.ExpireDays*3600*24*1000000000))
+			_, err := pipeline.Exec()
+			if err != nil {
+				Logger.Error("[redis] ", err)
 			}
+			oldValue := newValue.Val() - body.StatValue
+			incSquareSum := (newValue.Val() * newValue.Val()) - (oldValue * oldValue)
+			// 1(s) = 1000000000(ns)
+			dataRedis.HIncrByFloat(sumSquareKey, resultField, incSquareSum)
 		}
 
 		clientField := EncodeKey("", "", customKey)
 		clientKey := EncodeKey(prefix, "_client", timeString, body.AppId)
 		if newLog.UseLogLog {
 			viewLogLogKey := EncodeKey(prefix, "_view_loglog", timeString, body.AppId, customKey)
-			dataRedis.PFAdd(viewLogLogKey, body.ClientId)
-			count := dataRedis.PFCount(viewLogLogKey).Val()
-			dataRedis.HSet(clientKey, clientField, string(count))
+			pipeline.PFAdd(viewLogLogKey, body.ClientId)
+			count := pipeline.PFCount(viewLogLogKey)
+			_, err := pipeline.Exec()
+			if err != nil {
+				Logger.Error("[redis] ", err)
+			}
+			dataRedis.HSet(clientKey, clientField, count.Val())
 		} else {
 			viewKey := EncodeKey(prefix, "_view", timeString, body.AppId, body.ClientId, customKey)
-			views := dataRedis.Incr(viewKey).Val()
+			views := pipeline.Incr(viewKey)
 			// 1(s) = 1000000000(ns)
-			dataRedis.Expire(viewKey, time.Duration(newLog.ExpireDays*3600*24*1000000000))
-			if views == 1 {
+			pipeline.Expire(viewKey, time.Duration(newLog.ExpireDays*3600*24*1000000000))
+			_, err := pipeline.Exec()
+			if err != nil {
+				Logger.Error("[redis] ", err)
+			}
+			if views.Val() == 1 {
 				dataRedis.HIncrByFloat(clientKey, clientField, 1)
 			}
 		}

@@ -1,9 +1,9 @@
 package process
 
 import (
-	. "adhoc/adhoc_data_fast/model"
-	. "adhoc/adhoc_data_fast/config"
-	. "adhoc/adhoc_data_fast/utils"
+	. "adhoc/adhoc_data_fast_golang/model"
+	. "adhoc/adhoc_data_fast_golang/config"
+	. "adhoc/adhoc_data_fast_golang/utils"
 )
 
 var AllCounter = &NewLog{
@@ -58,14 +58,14 @@ var MonthlyUvCounter = &NewLog{
 	Prefix:      "adhoc_monthly_uv",
 	CustomNames: []string{},
 	CustomKeys: func(body LogBody) []string {
-		return []string{}
+		return []string{""}
 	},
 	TimeString: func(t int64) string {
 		return Monthly(t)
 	},
 	IgnoreDays:    GlobalConfig.Adhoc.IgnoreDays,
 	ExpireDays:    32,
-	CountStat:     true,
+	CountStat:     false,
 	CountVariance: false,
 	UseLogLog:     true,
 }

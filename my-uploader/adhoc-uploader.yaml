@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: adhoc-uploader
+spec:
+  replicas: 1
+  selector:
+    app: adhoc-uploader
+  template:
+    metadata:
+      name: adhoc-uploader
+      labels:
+        app: adhoc-uploader
+    spec:
+      imagePullSecrets:
+        - name: adhoc-docker-registry
+      containers:
+      - name: data-aggregator
+        image: registry.appadhoc.com:30443/adhoc-uploader:test
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            memory: 256Mi
+        env:
+        - name: ADDRESS
+          value: "http://static.appadhoc.com/"
+        - name: REDIS_HOST
+          value: "codis-redis-auth-1.default.svc.cluster.appadhoc.com"
+        - name: REDIS_PORT
+          value: "6379"
+        volumeMounts:
+        - mountPath: /storage/logs
+          name: adhoc-uploader-logs
+        - mountPath: /storage/images
+          name: adhoc-uploader-images
+      volumes:
+      - name: adhoc-uploader-logs
+        hostPath:
+          path: /data/adhoc-uploader/logs
+      - name: adhoc-uploader-images
+        hostPath:
+          path: /data/uploader/images
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: adhoc-uploader
+spec:
+  selector:
+    app: adhoc-uploader
+  ports:
+  - name: adhoc-uploader
+    port: 80
+    targetPort: 8080

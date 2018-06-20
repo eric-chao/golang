@@ -2,21 +2,8 @@ package test
 
 import (
 	"testing"
-	"github.com/go-redis/redis"
 	"strings"
 )
-
-func NewRedisClient() *redis.Client {
-	client := redis.NewClient(&redis.Options{
-		Addr:     "192.168.216.175:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-		// Maximum number of socket connections.
-		// Default is 10 connections per every CPU as reported by runtime.NumCPU.
-		PoolSize: 300,
-	})
-	return client
-}
 
 func pfaddWithPipeline() {
 	redis := NewRedisClient()
