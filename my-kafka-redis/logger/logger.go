@@ -2,7 +2,7 @@ package logger
 
 import (
 	"fmt"
-	"github.com/natefinch/lumberjack"
+	"github.com/lestrrat/go-file-rotatelogs"
 	log "github.com/sirupsen/logrus"
 	. "adhoc/adhoc_data_fast_golang/config"
 )
@@ -10,17 +10,14 @@ import (
 var Logger *log.Logger
 
 func init() {
+	// format: %Y%m%d%H%M
+	// make sure GlobalConfig.Storage.Log ended with '/'
+	logFile := fmt.Sprintf("%sadhoc-data-fast.log.%s", GlobalConfig.Log.Path, "%Y%m%d")
 	Logger = log.New()
 	Logger.SetLevel(log.InfoLevel)
 	Logger.Formatter = &log.TextFormatter{}
+	// set Logger.Out to rotatelogs
+	rl, _ := rotatelogs.New(logFile)
+	Logger.Out = rl
 
-	// make sure GlobalConfig.Storage.Log ended with '/'
-	Logger.Out = &lumberjack.Logger{
-		Filename:   fmt.Sprintf("%sadhoc-data-fast.log", GlobalConfig.Log.Path),
-		MaxSize:    30, 	// megabytes
-		MaxBackups: 7,
-		MaxAge:     1,     	//days
-		Compress:   false, 	// disabled by default
-		LocalTime:  true,
-	}
 }

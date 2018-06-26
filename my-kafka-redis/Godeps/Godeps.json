@@ -49,9 +49,17 @@
 			"Rev": "02692634419948b2dfd20b2057c51b24f3775db9"
 		},
 		{
-			"ImportPath": "github.com/natefinch/lumberjack",
-			"Comment": "v2.1-2-gaee4629",
-			"Rev": "aee4629129445bbdfb69aa565537dcfa16544311"
+			"ImportPath": "github.com/lestrrat/go-file-rotatelogs",
+			"Rev": "d3151e2a480fdcd05fb97102f5310a47d96274c4"
+		},
+		{
+			"ImportPath": "github.com/lestrrat/go-strftime",
+			"Rev": "ba3bf9c1d0421aa146564a632931730344f1f9f1"
+		},
+		{
+			"ImportPath": "github.com/pkg/errors",
+			"Comment": "v0.8.0-12-g816c908",
+			"Rev": "816c9085562cd7ee03e7f8188a1cfd942858cded"
 		},
 		{
 			"ImportPath": "github.com/sirupsen/logrus",

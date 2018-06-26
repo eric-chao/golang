@@ -63,13 +63,13 @@ func (newLog *NewLog) NewLogProcess(body LogBody) {
 			}
 		}
 		var accValue float64
-		Logger.Infof("[process] %s, %s, %f, %t", prefix, body.StatKey, body.AccValue, body.AccValue == accValue)
+		//Logger.Infof("[process] %s, %s, %f, %t", prefix, body.StatKey, body.AccValue, body.AccValue == accValue)
 		sumSquareKey := EncodeKey(prefix, "_sum_square", timeString, body.AppId)
 		if newLog.CountVariance && body.AccValue != accValue {
 			newValue := body.AccValue
 			oldValue := newValue - body.StatValue
 			incSquareSum := (newValue * newValue) - (oldValue * oldValue)
-			dataRedis.HIncrByFloat(sumSquareKey, resultField, incSquareSum)
+			pipeline.HIncrByFloat(sumSquareKey, resultField, incSquareSum)
 		} else if newLog.CountVariance {
 			historyKey := EncodeKey(prefix, "_history", timeString, body.AppId, body.ClientId, body.StatKey, customKey)
 			newValue := pipeline.IncrByFloat(historyKey, body.StatValue)
@@ -81,7 +81,7 @@ func (newLog *NewLog) NewLogProcess(body LogBody) {
 			oldValue := newValue.Val() - body.StatValue
 			incSquareSum := (newValue.Val() * newValue.Val()) - (oldValue * oldValue)
 			// 1(s) = 1000000000(ns)
-			dataRedis.HIncrByFloat(sumSquareKey, resultField, incSquareSum)
+			pipeline.HIncrByFloat(sumSquareKey, resultField, incSquareSum)
 		}
 
 		clientField := EncodeKey("", "", customKey)
@@ -94,7 +94,7 @@ func (newLog *NewLog) NewLogProcess(body LogBody) {
 			if err != nil {
 				Logger.Error("[redis] ", err)
 			}
-			dataRedis.HSet(clientKey, clientField, count.Val())
+			pipeline.HSet(clientKey, clientField, count.Val())
 		} else {
 			viewKey := EncodeKey(prefix, "_view", timeString, body.AppId, body.ClientId, customKey)
 			views := pipeline.Incr(viewKey)
@@ -105,10 +105,15 @@ func (newLog *NewLog) NewLogProcess(body LogBody) {
 				Logger.Error("[redis] ", err)
 			}
 			if views.Val() == 1 {
-				dataRedis.HIncrByFloat(clientKey, clientField, 1)
+				pipeline.HIncrByFloat(clientKey, clientField, 1)
 			}
 		}
 
+		// commit pipeline operation
+		_, err := pipeline.Exec()
+		if err != nil {
+			Logger.Error("[redis] ", err)
+		}
 	}
 
 }
