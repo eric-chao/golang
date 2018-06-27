@@ -9,7 +9,7 @@ func hincWithPipeline(i int) {
 	redis := NewRedisClient()
 	defer redis.Close()
 	pipeline := redis.Pipeline()
-	defer pipeline.Close()
+	//defer pipeline.Close()
 
 	var buf bytes.Buffer
 	buf.WriteString("r")

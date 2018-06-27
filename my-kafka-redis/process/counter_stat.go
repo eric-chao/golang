@@ -16,8 +16,7 @@ var StatCounter = &Statistics{
 }
 
 func (stat Statistics) NewLogProcess(body LogBody) {
-
-	redisClient := NewDataRedisClient()
+	redisClient := DataRedisClient
 	defer redisClient.Close()
 
 	redisClient.SAdd(stat.Prefix + body.AppId, body.StatKey)

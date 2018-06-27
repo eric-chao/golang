@@ -9,11 +9,10 @@ import (
 	"encoding/json"
 	"strings"
 	"time"
-	"sync"
 )
 
 func ParseBody(msg []byte, s *Semaphore) {
-	defer s.Release()
+
 	startTime := time.Now()
 
 	p := &RequestBody{}
@@ -54,44 +53,17 @@ func ParseBody(msg []byte, s *Semaphore) {
 				}
 				Logger.Info("[LogBody] ", log.ToString())
 				//process log
-				var wg sync.WaitGroup
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
-					AllCounter.NewLogProcess(log)
-				}()
-
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
-					HourlyCounter.NewLogProcess(log)
-				}()
-
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
-					DailyCounter.NewLogProcess(log)
-				}()
-
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
-					MonthlyUvCounter.NewLogProcess(log)
-				}()
+				AllCounter.NewLogProcess(log)
+				HourlyCounter.NewLogProcess(log)
+				DailyCounter.NewLogProcess(log)
+				MonthlyUvCounter.NewLogProcess(log)
 				//StatCounter.NewLogProcess(log)
 				//ApiCounter.NewLogProcess(log)
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
-					APIStatLogProcess(log)
-				}()
-
-				wg.Wait()
+				APIStatLogProcess(log)
 			}
 		}
 	}
 
 	Logger.Infof("[redis] takes: %d nanoseconds", time.Now().Sub(startTime))
-	// <-channel
-	// s.Release()
+	s.Release()
 }

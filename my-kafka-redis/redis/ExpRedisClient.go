@@ -8,9 +8,11 @@ import (
 	"bytes"
 )
 
-func NewExpRedisClient() *redis.Client {
+var ExpRedisClient *redis.Client
+
+func init() {
 	redisAddress := fmt.Sprintf("%s:%s", GlobalConfig.Redis.ExpHost, GlobalConfig.Redis.ExpPort)
-	ExpRedisClient := redis.NewClient(&redis.Options{
+	ExpRedisClient = redis.NewClient(&redis.Options{
 		Addr:     redisAddress,
 		Password: "", // no password set
 		DB:       0,  // use default DB
@@ -18,8 +20,6 @@ func NewExpRedisClient() *redis.Client {
 		// Default is 10 connections per every CPU as reported by runtime.NumCPU.
 		PoolSize: GlobalConfig.Redis.ExpPoolSize,
 	})
-
-	return ExpRedisClient
 }
 
 //get appId from appKey
@@ -36,14 +36,14 @@ func GetModId(appId, clientId string) string {
 	buf.WriteString(appId)
 	buf.WriteString("_")
 	buf.WriteString(clientId)
-	redisClient := NewExpRedisClient()
+	redisClient := ExpRedisClient
 	defer redisClient.Close()
 
 	return redisClient.Get(buf.String()).Val()
 }
 
 func GetExpId(appId, clientId string, date int64) string {
-	redisClient := NewExpRedisClient()
+	redisClient := ExpRedisClient
 	defer redisClient.Close()
 	key := EncodeKey("adhoc_flaglog", "", UnixToTimeString(date, DefaultFormat), appId, clientId)
 	value := redisClient.Get(key).Val()

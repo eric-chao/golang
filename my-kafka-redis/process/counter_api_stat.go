@@ -1,6 +1,7 @@
 package process
 
 import (
+	. "adhoc/adhoc_data_fast_golang/logger"
 	. "adhoc/adhoc_data_fast_golang/redis"
 	. "adhoc/adhoc_data_fast_golang/utils"
 	. "adhoc/adhoc_data_fast_golang/model"
@@ -8,10 +9,10 @@ import (
 )
 
 func APIStatLogProcess(body LogBody) {
-	redisClient := NewDataRedisClient()
+	redisClient := DataRedisClient
 	defer redisClient.Close()
 	pipeline := redisClient.Pipeline()
-	defer pipeline.Close()
+	//defer pipeline.Close()
 
 	expId := body.ExpId
 	if expId != "CONTROL" {
@@ -26,5 +27,10 @@ func APIStatLogProcess(body LogBody) {
 	}
 
 	pipeline.SAdd("adhoc_stat_"+body.AppId, body.StatKey)
-	pipeline.Exec()
+
+	// commit pipeline operation
+	_, err := pipeline.Exec()
+	if err != nil {
+		Logger.Error("[redis] ", err)
+	}
 }

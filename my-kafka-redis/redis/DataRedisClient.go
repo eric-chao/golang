@@ -6,9 +6,11 @@ import (
 	"fmt"
 )
 
-func NewDataRedisClient() *redis.Client {
+var DataRedisClient *redis.Client
+
+func init() {
 	redisAddress := fmt.Sprintf("%s:%s", GlobalConfig.Redis.DataHost, GlobalConfig.Redis.DataPort)
-	DataRedisClient := redis.NewClient(&redis.Options{
+	DataRedisClient = redis.NewClient(&redis.Options{
 		Addr:     redisAddress,
 		Password: "", // no password set
 		DB:       0,  // use default DB
@@ -16,5 +18,4 @@ func NewDataRedisClient() *redis.Client {
 		// Default is 10 connections per every CPU as reported by runtime.NumCPU.
 		PoolSize: GlobalConfig.Redis.ExpPoolSize,
 	})
-	return DataRedisClient
 }

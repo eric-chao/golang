@@ -30,7 +30,7 @@ func (api Api) NewLogProcess(body LogBody) {
 		}
 
 		apiKey := EncodeKey(api.Prefix, "_count", api.TimeString(logTime), body.AppId)
-		redisClient := NewDataRedisClient()
+		redisClient := DataRedisClient
 		defer redisClient.Close()
 
 		redisClient.HIncrBy(apiKey, EncodeKey("", "", expId), 1)

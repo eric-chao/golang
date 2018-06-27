@@ -16,7 +16,7 @@ func Test_Redis_Get_Pipeline(t *testing.T) {
 	redis := NewRedisClient()
 	defer redis.Close()
 	pipeline := redis.Pipeline()
-	defer pipeline.Close()
+	//defer pipeline.Close()
 
 	v1 := pipeline.IncrByFloat("f_key", 0.1)
 	v2 := pipeline.HIncrByFloat("f_h_key", "f_key", 0.01)
