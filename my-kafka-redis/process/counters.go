@@ -1,9 +1,9 @@
 package process
 
 import (
-	. "adhoc/adhoc_data_fast_golang/model"
-	. "adhoc/adhoc_data_fast_golang/config"
-	. "adhoc/adhoc_data_fast_golang/utils"
+	. "golang/my-kafka-redis/model"
+	. "golang/my-kafka-redis/config"
+	. "golang/my-kafka-redis/utils"
 )
 
 var AllCounter = &NewLog{

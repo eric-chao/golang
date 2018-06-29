@@ -1,7 +1,7 @@
 package test
 
 import (
-	. "adhoc/adhoc_data_fast_golang/utils"
+	. "golang/my-kafka-redis/utils"
 	"testing"
 )
 

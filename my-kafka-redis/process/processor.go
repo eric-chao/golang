@@ -1,20 +1,17 @@
-package consumer
+package process
 
 import (
-	. "adhoc/adhoc_data_fast_golang/logger"
-	. "adhoc/adhoc_data_fast_golang/model"
-	. "adhoc/adhoc_data_fast_golang/redis"
-	. "adhoc/adhoc_data_fast_golang/process"
-	. "adhoc/adhoc_data_fast_golang/semaphore"
+	. "golang/my-kafka-redis/logger"
+	. "golang/my-kafka-redis/model"
+	. "golang/my-kafka-redis/redis"
+	. "golang/my-kafka-redis/semaphore"
 	"encoding/json"
 	"strings"
 	"time"
+	"sync"
 )
 
 func ParseBody(msg []byte, s *Semaphore) {
-
-	startTime := time.Now()
-
 	p := &RequestBody{}
 	json.Unmarshal(msg, p)
 	appId := GetAppId(p.AppKey)
@@ -35,7 +32,8 @@ func ParseBody(msg []byte, s *Semaphore) {
 					expIds = append(expIds, GetExpId(appId, clientId, date))
 				}
 			}
-
+			var wg sync.WaitGroup
+			redisStartTime := time.Now()
 			modId := GetModId(appId, clientId)
 			for _, expId := range expIds {
 				log := LogBody{
@@ -53,17 +51,45 @@ func ParseBody(msg []byte, s *Semaphore) {
 				}
 				Logger.Info("[LogBody] ", log.ToString())
 				//process log
-				AllCounter.NewLogProcess(log)
-				HourlyCounter.NewLogProcess(log)
-				DailyCounter.NewLogProcess(log)
-				MonthlyUvCounter.NewLogProcess(log)
+				wg.Add(1)
+				go func(){
+					AllCounter.NewLogProcess(log)
+					wg.Done()
+				}()
+
+				wg.Add(1)
+				go func(){
+					HourlyCounter.NewLogProcess(log)
+					wg.Done()
+				}()
+
+				wg.Add(1)
+				go func(){
+					DailyCounter.NewLogProcess(log)
+					wg.Done()
+				}()
+
+				wg.Add(1)
+				go func(){
+					MonthlyUvCounter.NewLogProcess(log)
+					wg.Done()
+				}()
+
+				wg.Add(1)
+				go func(){
+					APIStatLogProcess(log)
+					wg.Done()
+				}()
 				//StatCounter.NewLogProcess(log)
 				//ApiCounter.NewLogProcess(log)
-				APIStatLogProcess(log)
+				//APIStatLogProcess(log)
 			}
+			wg.Wait()
+			redisElapsed := time.Since(redisStartTime)
+			Logger.Infof("[redis] takes: %d ns", redisElapsed)
 		}
 	}
 
-	Logger.Infof("[redis] takes: %d nanoseconds", time.Now().Sub(startTime))
+	//release
 	s.Release()
 }

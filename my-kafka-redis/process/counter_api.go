@@ -1,9 +1,9 @@
 package process
 
 import (
-	. "adhoc/adhoc_data_fast_golang/redis"
-	. "adhoc/adhoc_data_fast_golang/utils"
-	. "adhoc/adhoc_data_fast_golang/model"
+	. "golang/my-kafka-redis/redis"
+	. "golang/my-kafka-redis/utils"
+	. "golang/my-kafka-redis/model"
 	"time"
 )
 
@@ -30,9 +30,8 @@ func (api Api) NewLogProcess(body LogBody) {
 		}
 
 		apiKey := EncodeKey(api.Prefix, "_count", api.TimeString(logTime), body.AppId)
-		redisClient := DataRedisClient
-		defer redisClient.Close()
+		dataRedis := GetDataRedis()
 
-		redisClient.HIncrBy(apiKey, EncodeKey("", "", expId), 1)
+		dataRedis.HIncrBy(apiKey, EncodeKey("", "", expId), 1)
 	}
 }

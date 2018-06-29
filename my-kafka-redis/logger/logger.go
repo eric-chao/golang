@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/lestrrat/go-file-rotatelogs"
 	log "github.com/sirupsen/logrus"
-	. "adhoc/adhoc_data_fast_golang/config"
+	. "golang/my-kafka-redis/config"
 )
 
 var Logger *log.Logger

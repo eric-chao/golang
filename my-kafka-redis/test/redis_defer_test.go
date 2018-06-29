@@ -2,8 +2,6 @@ package test
 
 import "testing"
 
-var redisClient = NewRedisClient()
-
 func call() {
 	pipeline := redisClient.Pipeline()
 	redisClient.Close()

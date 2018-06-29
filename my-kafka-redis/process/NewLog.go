@@ -1,10 +1,10 @@
 package process
 
 import (
-	. "adhoc/adhoc_data_fast_golang/logger"
-	. "adhoc/adhoc_data_fast_golang/model"
-	. "adhoc/adhoc_data_fast_golang/utils"
-	. "adhoc/adhoc_data_fast_golang/redis"
+	. "golang/my-kafka-redis/logger"
+	. "golang/my-kafka-redis/model"
+	. "golang/my-kafka-redis/utils"
+	. "golang/my-kafka-redis/redis"
 	"time"
 )
 
@@ -29,23 +29,22 @@ var commonStatKey = map[string]string{
 }
 
 func (newLog *NewLog) NewLogProcess(body LogBody) {
-	logTime := body.Timestamp
-	now := time.Now().Unix()
+	logTime := body.Timestamp / 1000
+	nowTime := time.Now().Unix()
+	//Logger.Info("nowTime", nowTime, "logTime", logTime)
 	if !body.FromSystem {
-		if logTime > now {
-			logTime = now
+		if logTime > nowTime {
+			logTime = nowTime
 		}
 
-		if int(CalcAbs(now-logTime)/(3600*24)) > newLog.IgnoreDays {
+		if int(CalcAbs(nowTime-logTime)/(3600*24)) > newLog.IgnoreDays {
 			return
 		}
 	}
 
 	//data redis client
-	dataRedis := DataRedisClient
-	defer dataRedis.Close()
+	dataRedis := GetDataRedis()
 	pipeline := dataRedis.Pipeline()
-	//defer pipeline.Close()
 
 	for _, customKey := range newLog.CustomKeys(body) {
 		prefix := newLog.Prefix
@@ -69,7 +68,7 @@ func (newLog *NewLog) NewLogProcess(body LogBody) {
 			newValue := body.AccValue
 			oldValue := newValue - body.StatValue
 			incSquareSum := (newValue * newValue) - (oldValue * oldValue)
-			dataRedis.HIncrByFloat(sumSquareKey, resultField, incSquareSum)
+			pipeline.HIncrByFloat(sumSquareKey, resultField, incSquareSum)
 		} else if newLog.CountVariance {
 			historyKey := EncodeKey(prefix, "_history", timeString, body.AppId, body.ClientId, body.StatKey, customKey)
 			newValue := pipeline.IncrByFloat(historyKey, body.StatValue)
@@ -81,7 +80,7 @@ func (newLog *NewLog) NewLogProcess(body LogBody) {
 			oldValue := newValue.Val() - body.StatValue
 			incSquareSum := (newValue.Val() * newValue.Val()) - (oldValue * oldValue)
 			// 1(s) = 1000000000(ns)
-			dataRedis.HIncrByFloat(sumSquareKey, resultField, incSquareSum)
+			pipeline.HIncrByFloat(sumSquareKey, resultField, incSquareSum)
 		}
 
 		clientField := EncodeKey("", "", customKey)
@@ -94,7 +93,7 @@ func (newLog *NewLog) NewLogProcess(body LogBody) {
 			if err != nil {
 				Logger.Error("[redis] ", err)
 			}
-			dataRedis.HSet(clientKey, clientField, count.Val())
+			pipeline.HSet(clientKey, clientField, count.Val())
 		} else {
 			viewKey := EncodeKey(prefix, "_view", timeString, body.AppId, body.ClientId, customKey)
 			views := pipeline.Incr(viewKey)
@@ -105,10 +104,14 @@ func (newLog *NewLog) NewLogProcess(body LogBody) {
 				Logger.Error("[redis] ", err)
 			}
 			if views.Val() == 1 {
-				dataRedis.HIncrByFloat(clientKey, clientField, 1)
+				pipeline.HIncrByFloat(clientKey, clientField, 1)
 			}
 		}
 
+		_, err := pipeline.Exec()
+		if err != nil {
+			Logger.Error("[redis] ", err)
+		}
 	}
 
 }

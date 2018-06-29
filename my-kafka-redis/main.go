@@ -2,11 +2,12 @@ package main
 
 import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	. "adhoc/adhoc_data_fast_golang/config"
-	. "adhoc/adhoc_data_fast_golang/logger"
-	. "adhoc/adhoc_data_fast_golang/consumer"
-	. "adhoc/adhoc_data_fast_golang/semaphore"
-	"fmt"
+	. "golang/my-kafka-redis/config"
+	. "golang/my-kafka-redis/logger"
+	. "golang/my-kafka-redis/redis"
+	. "golang/my-kafka-redis/process"
+	. "golang/my-kafka-redis/semaphore"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -40,7 +41,7 @@ func main() {
 
 	// control the consumer parallelism
 	// channel := make(chan bool, GlobalConfig.Go.Goroutine)
-	s := NewSemaphore(GlobalConfig.Go.Goroutine)
+	s := NewSemaphore(GlobalConfig.Go.MaxProcessGoroutine)
 
 	topic := GlobalConfig.Kafka.Topic
 	c.SubscribeTopics([]string{topic}, nil)
@@ -78,15 +79,24 @@ func main() {
 	// wait for all goroutines completed.
 	s.Wait()
 
+	// close redis
+	CloseExpRedis()
+	CloseDataRedis()
+
 	Logger.Info("process end...")
 
 }
 
 func print() {
-	fmt.Println("[kafka-broker]\t", GlobalConfig.Kafka.Bootstrap)
-	fmt.Println("[kafka-topic]\t", GlobalConfig.Kafka.Topic)
-	fmt.Println("[redis-exp]\t", GlobalConfig.Redis.ExpHost)
-	fmt.Println("[redis-exp]\t", GlobalConfig.Redis.ExpPort)
-	fmt.Println("[redis-data]\t", GlobalConfig.Redis.DataHost)
-	fmt.Println("[redis-data]\t", GlobalConfig.Redis.DataPort)
+	log.Println("[max.proces]   \t", GlobalConfig.Go.MaxProcs)
+	log.Println("[max.goroutine]\t", GlobalConfig.Go.MaxProcessGoroutine)
+	log.Println("[kafka-broker] \t", GlobalConfig.Kafka.Bootstrap)
+	log.Println("[kafka-topic]  \t", GlobalConfig.Kafka.Topic)
+	log.Println("[kafka-group]  \t", GlobalConfig.Kafka.GroupId)
+	log.Println("[redis-data]   \t", GlobalConfig.Redis.DataHost)
+	log.Println("[redis-data]   \t", GlobalConfig.Redis.DataPort)
+	log.Println("[redis-data]   \t", GlobalConfig.Redis.DataPoolSize)
+	log.Println("[redis-exp]    \t", GlobalConfig.Redis.ExpHost)
+	log.Println("[redis-exp]    \t", GlobalConfig.Redis.ExpPort)
+	log.Println("[redis-exp]    \t", GlobalConfig.Redis.ExpPoolSize)
 }

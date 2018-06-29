@@ -1,18 +1,16 @@
 package process
 
 import (
-	. "adhoc/adhoc_data_fast_golang/logger"
-	. "adhoc/adhoc_data_fast_golang/redis"
-	. "adhoc/adhoc_data_fast_golang/utils"
-	. "adhoc/adhoc_data_fast_golang/model"
+	. "golang/my-kafka-redis/logger"
+	. "golang/my-kafka-redis/redis"
+	. "golang/my-kafka-redis/utils"
+	. "golang/my-kafka-redis/model"
 	"time"
 )
 
 func APIStatLogProcess(body LogBody) {
-	redisClient := DataRedisClient
-	defer redisClient.Close()
-	pipeline := redisClient.Pipeline()
-	//defer pipeline.Close()
+	dataRedis := GetDataRedis()
+	pipeline := dataRedis.Pipeline()
 
 	expId := body.ExpId
 	if expId != "CONTROL" {

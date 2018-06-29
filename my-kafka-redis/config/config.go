@@ -39,8 +39,8 @@ type Config struct {
 	}
 
 	Go struct {
-		MaxProcs  int `ini:"max.procs"`
-		Goroutine int `ini:"goroutine"`
+		MaxProcs            int `ini:"max.procs"`
+		MaxProcessGoroutine int `ini:"max.process.goroutine"`
 	}
 }
 

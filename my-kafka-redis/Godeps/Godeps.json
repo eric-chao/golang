@@ -1,5 +1,5 @@
 {
-	"ImportPath": "adhoc/adhoc_data_fast_golang",
+	"ImportPath": "golang/my-kafka-redis",
 	"GoVersion": "go1.9",
 	"GodepVersion": "v80",
 	"Deps": [

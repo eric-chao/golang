@@ -1,8 +1,8 @@
 package process
 
 import (
-	. "adhoc/adhoc_data_fast_golang/model"
-	. "adhoc/adhoc_data_fast_golang/redis"
+	. "golang/my-kafka-redis/model"
+	. "golang/my-kafka-redis/redis"
 )
 
 type Statistics struct {
@@ -16,9 +16,6 @@ var StatCounter = &Statistics{
 }
 
 func (stat Statistics) NewLogProcess(body LogBody) {
-	redisClient := DataRedisClient
-	defer redisClient.Close()
-
-	redisClient.SAdd(stat.Prefix + body.AppId, body.StatKey)
-
+	dataRedis := GetDataRedis()
+	dataRedis.SAdd(stat.Prefix+body.AppId, body.StatKey)
 }

@@ -6,9 +6,7 @@ import (
 )
 
 func hincWithPipeline(i int) {
-	redis := NewRedisClient()
-	defer redis.Close()
-	pipeline := redis.Pipeline()
+	pipeline := redisClient.Pipeline()
 	//defer pipeline.Close()
 
 	var buf bytes.Buffer
@@ -21,14 +19,12 @@ func hincWithPipeline(i int) {
 }
 
 func hinc(i int) {
-	redis := NewRedisClient()
-	defer redis.Close()
 
 	var buf bytes.Buffer
 	buf.WriteString("r")
 	buf.WriteString(string(i))
 
-	redis.HIncrBy("key1", "redis", 1)
+	redisClient.HIncrBy("key1", "redis", 1)
 
 }
 

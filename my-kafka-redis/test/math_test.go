@@ -2,7 +2,7 @@ package test
 
 import (
 	"testing"
-	. "adhoc/adhoc_data_fast_golang/utils"
+	. "golang/my-kafka-redis/utils"
 )
 
 func Test_Long_Abs(t *testing.T) {
